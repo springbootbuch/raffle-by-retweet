@@ -54,7 +54,7 @@ class RunRaffle(val config: RaffleByRetweetProperties) : CommandLineRunner {
                 .retweets(id = config.sourceTweetId, count = 512)
                 .complete().result
         val winner = retweets[ThreadLocalRandom.current().nextInt(retweets.size)]
-        println("${winner.user.screenName} (${winner.user.name})")
+        println("@${winner.user.screenName} (${winner.user.name})")
     }
 }
 
