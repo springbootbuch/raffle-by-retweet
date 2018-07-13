@@ -16,6 +16,7 @@
 package de.springbootbuch.raffles.retweet
 
 import jp.nephy.penicillin.PenicillinClient
+import jp.nephy.penicillin.model.Status
 import okhttp3.ConnectionPool
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -23,6 +24,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
@@ -37,6 +43,10 @@ class RaffleByRetweetProperties {
     lateinit var accessToken: String;
     lateinit var accessTokenSecret: String;
     var sourceTweetId: Long = 0;
+    var endOfRaffle: ZonedDateTime = ZonedDateTime.of(
+            LocalDate.of(2018, 7, 13),
+            LocalTime.of(12, 0),
+            ZoneId.of("Europe/Berlin"))
 }
 
 @Component
@@ -50,11 +60,17 @@ class RunRaffle(val config: RaffleByRetweetProperties) : CommandLineRunner {
             }
         }
 
+        val byEndOfRaffle: (Status) -> Boolean = {
+            it.createdAt.date.toInstant().atZone(config.endOfRaffle.zone)
+                    .isBefore(config.endOfRaffle)
+        }
         val retweets = client.status
                 .retweets(id = config.sourceTweetId, count = 512)
                 .complete().result
+                .filter(byEndOfRaffle)
+        println("Retrieved ${retweets.size} retweets");
         val winner = retweets[ThreadLocalRandom.current().nextInt(retweets.size)]
-        println("@${winner.user.screenName} (${winner.user.name})")
+        println("Winner is: @${winner.user.screenName} (${winner.user.name})")
     }
 }
 
