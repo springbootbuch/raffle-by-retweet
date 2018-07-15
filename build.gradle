@@ -19,9 +19,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 group = 'de.springbootbuch'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+
 compileKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-Xjsr305=strict"]
@@ -32,6 +36,17 @@ compileTestKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-Xjsr305=strict"]
         jvmTarget = "1.8"
+    }
+}
+
+idea {
+    module {
+        def kaptMain = file("${project.buildDir}/generated/source/kapt/main")
+        sourceDirs += kaptMain
+        generatedSourceDirs += kaptMain
+
+        outputDir file("${project.buildDir}/classes/main")
+        testOutputDir file("${project.buildDir}/classes/test")
     }
 }
 
